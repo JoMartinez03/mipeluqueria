@@ -25,6 +25,8 @@ export default async function ConfiguracionPage({
           address: barbershop.address,
           description: barbershop.description,
           instagram: barbershop.instagram,
+          logo: barbershop.logo,
+          coverImage: barbershop.coverImage,
         }}
       />
     </>

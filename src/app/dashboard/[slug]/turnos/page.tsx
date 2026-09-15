@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { Filter } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { Filter, CalendarX2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -10,13 +9,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { DashboardPageHeader } from '@/components/dashboard/sidebar'
-import { AppointmentStatusMenu } from '@/components/dashboard/appointment-status-menu'
+import { AppointmentTimeline, type TimelineAppointment } from '@/components/dashboard/appointment-timeline'
 import { getVerifiedBarbershop } from '@/lib/tenants'
 import { prisma } from '@/lib/prisma'
-import { formatClock, formatShortDate, formatPrice } from '@/lib/format'
-import { addDays, topOfLocalDayUtc } from '@/lib/dates'
-import { STATUS_COLORS, STATUS_LABELS } from '@/lib/constants'
-import { cn } from '@/lib/utils'
+import { formatShortDate } from '@/lib/format'
+import { addDays, topOfLocalDayUtc, toYmd } from '@/lib/dates'
+import { utcToZonedTime } from '@/lib/booking'
+import { STATUS_LABELS } from '@/lib/constants'
 
 const RANGES = [
   { id: 'hoy', label: 'Hoy', default: true },
@@ -65,8 +64,41 @@ export default async function TurnosPage({ params, searchParams }: Props) {
     orderBy: { startAt: 'asc' },
   })
 
+  const rows: TimelineAppointment[] = appointments.map((a) => ({
+    id: a.id,
+    startAt: a.startAt,
+    customerName: a.customerName,
+    status: a.status,
+    phone: a.customerPhone,
+    serviceName: a.service.name,
+    price: a.service.price,
+    duration: a.service.duration,
+  }))
+
+  const groups: { label?: string; items: TimelineAppointment[] }[] = []
+  for (const row of rows) {
+    const dayKey = toYmd(utcToZonedTime(row.startAt, barbershop.timezone))
+    const last = groups[groups.length - 1]
+    if (last && last.label === dayKey) {
+      last.items.push(row)
+    } else {
+      groups.push({ label: dayKey, items: [row] })
+    }
+  }
+
+  for (const g of groups) {
+    g.label = formatShortDate(g.items[0].startAt, barbershop.timezone)
+  }
+
   const buildHref = (r: string, s: string) =>
     `/dashboard/${slug}/turnos?rango=${r}&estado=${s}`
+
+  const sectionTitle =
+    range === 'hoy'
+      ? 'Turnos de hoy'
+      : range === 'proximos'
+        ? 'Próximos turnos'
+        : 'Todos los turnos'
 
   return (
     <>
@@ -81,75 +113,70 @@ export default async function TurnosPage({ params, searchParams }: Props) {
         }
       />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {RANGES.map((r) => (
-          <Button
-            key={r.id}
-            render={<Link href={buildHref(r.id, status)} />}
-            size="sm"
-            variant={range === r.id ? 'default' : 'outline'}
-          >
-            {r.label}
-          </Button>
-        ))}
-        <span className="mx-1 h-4 w-px bg-border" />
-        {STATUS_FILTERS.map((s) => (
-          <Button
-            key={s.id}
-            render={<Link href={buildHref(range, s.id)} />}
-            size="sm"
-            variant={status === s.id ? 'secondary' : 'ghost'}
-          >
-            {s.label}
-          </Button>
-        ))}
+      <div className="mb-5 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Período
+          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {RANGES.map((r) => (
+              <Button
+                key={r.id}
+                render={<Link href={buildHref(r.id, status)} />}
+                size="sm"
+                variant={range === r.id ? 'default' : 'outline'}
+              >
+                {r.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Estado
+          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {STATUS_FILTERS.map((s) => (
+              <Button
+                key={s.id}
+                render={<Link href={buildHref(range, s.id)} />}
+                size="sm"
+                variant={status === s.id ? 'default' : 'ghost'}
+              >
+                {s.label}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>
-            {range === 'hoy' ? 'Turnos de hoy' : range === 'proximos' ? 'Próximos turnos' : 'Todos los turnos'}
-          </CardTitle>
+          <CardTitle>{sectionTitle}</CardTitle>
           <CardDescription>
-            {status === 'TODOS' ? 'Mostrando todos los estados' : `Filtrando por ${STATUS_LABELS[status]}`}
+            {status === 'TODOS' ? 'Mostrando todos los estados' : `Filtrando por ${STATUS_LABELS[status] ?? status}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {appointments.length === 0 ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              No hay turnos en esta vista.
+            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-muted/30 px-6 py-12 text-center">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <CalendarX2 className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">No hay turnos en esta vista</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Probá con otro período o estado para ver más turnos.
+                </p>
+              </div>
+              {(range !== 'hoy' || status !== 'TODOS') && (
+                <Button render={<Link href={buildHref('hoy', 'TODOS')} />} variant="outline" size="sm">
+                  Ver turnos de hoy
+                </Button>
+              )}
             </div>
           ) : (
-            <div className="divide-y">
-              {appointments.map((a) => {
-                return (
-                  <div key={a.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-4">
-                    <div className="w-32 shrink-0 sm:text-left">
-                      <div className="text-sm font-semibold">
-                        {formatClock(a.startAt, barbershop.timezone)} hs
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatShortDate(a.startAt, barbershop.timezone)}
-                      </div>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium">{a.customerName}</div>
-                      <div className="truncate text-sm text-muted-foreground">
-                        {a.service.name} · {formatPrice(a.service.price)}
-                      </div>
-                      <div className="truncate text-xs text-muted-foreground/80">{a.customerPhone}</div>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={cn('shrink-0 rounded-full', STATUS_COLORS[a.status])}
-                    >
-                      {STATUS_LABELS[a.status]}
-                    </Badge>
-                    <AppointmentStatusMenu id={a.id} status={a.status} />
-                  </div>
-                )
-              })}
-            </div>
+            <AppointmentTimeline timezone={barbershop.timezone} groups={groups} />
           )}
         </CardContent>
       </Card>

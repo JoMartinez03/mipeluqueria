@@ -49,11 +49,13 @@ export function AppSidebar({
   barbershopName,
   userName,
   todayCount,
+  logo,
 }: {
   slug: string
   barbershopName: string
   userName: string
   todayCount?: number
+  logo?: string | null
 }) {
   const pathname = usePathname()
   const { setOpenMobile } = useSidebar()
@@ -69,8 +71,13 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="data-[active=true]:bg-transparent">
               <div className="flex items-center gap-2 px-1">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
-                  <ScissorsLogo className="h-4.5 w-4.5 text-white" strokeWidth={1.8} />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/10 ring-1 ring-white/15">
+                  {logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={logo} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <ScissorsLogo className="h-4.5 w-4.5 text-white" strokeWidth={1.8} />
+                  )}
                 </div>
                 <div className="grid flex-1 leading-tight">
                   <span className="truncate text-sm font-semibold text-sidebar-foreground">
@@ -104,7 +111,7 @@ export function AppSidebar({
                     <span>{item.label}</span>
                   </SidebarMenuButton>
                   {item.label === 'Turnos' && todayCount !== undefined && todayCount > 0 && (
-                    <SidebarMenuBadge className="bg-sky-500/20 text-sky-300 font-semibold text-xs">
+                    <SidebarMenuBadge className="bg-primary/25 text-teal-200 ring-1 ring-primary/30 font-semibold text-xs">
                       {todayCount}
                     </SidebarMenuBadge>
                   )}
@@ -172,7 +179,15 @@ export function DashboardPageHeader({
   )
 }
 
-export function MobileHeader({ barbershopName, userName }: { barbershopName: string; userName: string }) {
+export function MobileHeader({
+  barbershopName,
+  userName,
+  logo,
+}: {
+  barbershopName: string
+  userName: string
+  logo?: string | null
+}) {
   const { toggleSidebar } = useSidebar()
   return (
     <header className="flex items-center justify-between border-b bg-card px-4 py-3 md:hidden">
@@ -180,7 +195,12 @@ export function MobileHeader({ barbershopName, userName }: { barbershopName: str
         <MenuIcon className="h-5 w-5" />
       </button>
       <div className="flex items-center gap-2">
-        <ScissorsLogo className="h-4 w-4" />
+        {logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logo} alt="" className="h-5 w-5 rounded object-cover" />
+        ) : (
+          <ScissorsLogo className="h-4 w-4" />
+        )}
         <span className="text-sm font-semibold">{barbershopName}</span>
       </div>
       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-[10px] font-bold uppercase">

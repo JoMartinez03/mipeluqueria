@@ -31,8 +31,23 @@ export default async function PublicBarbershopPage({
     <div className="animate-slide-up">
       <section className="relative overflow-hidden">
         <div className="gradient-sidebar absolute inset-0" />
+        {barbershop.coverImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={barbershop.coverImage}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover opacity-45"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 via-zinc-950/55 to-zinc-950/80" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.08),transparent_55%)]" />
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+          {barbershop.logo && (
+            <div className="mb-5 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/25 backdrop-blur">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={barbershop.logo} alt={`Logo de ${barbershop.name}`} className="h-full w-full object-cover" />
+            </div>
+          )}
           <Badge className="mb-4 rounded-full bg-white/10 text-white ring-1 ring-white/20">
             <Scissors className="mr-1.5 h-3 w-3" /> Reservas online
           </Badge>

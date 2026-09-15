@@ -10,6 +10,8 @@ const schema = z.object({
   address: z.string().max(120).optional().nullable(),
   description: z.string().max(500).optional().nullable(),
   instagram: z.string().max(60).optional().nullable(),
+  logo: z.string().max(2_000_000).optional().nullable(),
+  coverImage: z.string().max(4_000_000).optional().nullable(),
 })
 
 export async function PATCH(request: NextRequest) {
@@ -34,6 +36,8 @@ export async function PATCH(request: NextRequest) {
       address: true,
       description: true,
       instagram: true,
+      logo: true,
+      coverImage: true,
       timezone: true,
     },
   })

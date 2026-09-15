@@ -33,9 +33,14 @@ export default async function DashboardLayout({
         barbershopName={barbershop.name}
         userName={user.name ?? 'Usuario'}
         todayCount={todayCount}
+        logo={barbershop.logo}
       />
       <SidebarInset className="bg-background">
-        <MobileHeader barbershopName={barbershop.name} userName={user.name ?? 'Usuario'} />
+        <MobileHeader
+          barbershopName={barbershop.name}
+          userName={user.name ?? 'Usuario'}
+          logo={barbershop.logo}
+        />
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="mx-auto max-w-6xl">{children}</div>
         </main>

@@ -8,6 +8,7 @@ const serviceSchema = z.object({
   description: z.string().max(300).optional().nullable(),
   price: z.coerce.number().int().min(0).max(9999999),
   duration: z.coerce.number().int().min(5).max(1440),
+  active: z.boolean().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -57,6 +58,7 @@ export async function PATCH(request: NextRequest) {
       description: parsed.data.description ?? null,
       price: parsed.data.price,
       duration: parsed.data.duration,
+      ...(parsed.data.active !== undefined ? { active: parsed.data.active } : {}),
     },
   })
 

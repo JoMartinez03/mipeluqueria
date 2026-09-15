@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Save } from 'lucide-react'
+import { Save, Clock, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,6 +34,20 @@ export function BusinessHoursEditor({ hours, timezone }: { hours: HourRow[]; tim
     setRows((prev) => prev.map((r) => (r.dayOfWeek === dayOfWeek ? { ...r, ...patch } : r)))
   }
 
+  const addInterval = (dayOfWeek: number) => {
+    setRows((prev) =>
+      prev.map((r) =>
+        r.dayOfWeek === dayOfWeek ? { ...r, open2: r.open2 ?? r.close1 ?? '18:00', close2: r.close2 ?? '21:00' } : r
+      )
+    )
+  }
+
+  const clearInterval = (dayOfWeek: number) => {
+    setRows((prev) =>
+      prev.map((r) => (r.dayOfWeek === dayOfWeek ? { ...r, open2: null, close2: null } : r))
+    )
+  }
+
   const save = async () => {
     setSaving(true)
     try {
@@ -56,51 +70,87 @@ export function BusinessHoursEditor({ hours, timezone }: { hours: HourRow[]; tim
   return (
     <div>
       <div className="divide-y">
-        {rows.map((r) => (
-          <div key={r.dayOfWeek} className="flex flex-col gap-4 py-4 first:pt-0 sm:flex-row sm:items-center">
-            <div className="flex w-32 shrink-0 items-center gap-3">
-              <Switch
-                checked={!r.closed}
-                onCheckedChange={(v) => update(r.dayOfWeek, { closed: !v })}
-                aria-label={`${DAY_NAMES[r.dayOfWeek]} abierto`}
-              />
-              <span className={r.closed ? 'text-sm text-muted-foreground' : 'text-sm font-medium'}>
-                {DAY_NAMES[r.dayOfWeek]}
-              </span>
-            </div>
-            {r.closed ? (
-              <div className="text-sm text-muted-foreground">Cerrado</div>
-            ) : (
-              <div className="flex flex-wrap items-center gap-2">
-                <TimeInput
-                  label="Desde"
-                  value={r.open1 ?? ''}
-                  onChange={(v) => update(r.dayOfWeek, { open1: v || null })}
+        {rows.map((r) => {
+          const hasSecond = Boolean(r.open2 && r.close2)
+          return (
+            <div key={r.dayOfWeek} className="grid gap-3 py-3.5 first:pt-0 sm:grid-cols-[11rem_1fr] sm:items-start">
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={!r.closed}
+                  onCheckedChange={(v) => update(r.dayOfWeek, { closed: !v })}
+                  aria-label={`${DAY_NAMES[r.dayOfWeek]} abierto`}
                 />
-                <span className="text-muted-foreground">a</span>
-                <TimeInput
-                  label="Hasta"
-                  value={r.close1 ?? ''}
-                  onChange={(v) => update(r.dayOfWeek, { close1: v || null })}
-                />
-                <span className="text-sm text-muted-foreground">·</span>
-                <TimeInput
-                  label="Turno 2 (opcional) desde"
-                  value={r.open2 ?? ''}
-                  onChange={(v) => update(r.dayOfWeek, { open2: v || null })}
-                />
-                <span className="text-muted-foreground">a</span>
-                <TimeInput
-                  label="hasta"
-                  value={r.close2 ?? ''}
-                  onChange={(v) => update(r.dayOfWeek, { close2: v || null })}
-                />
+                <span className={r.closed ? 'text-sm text-muted-foreground' : 'text-sm font-medium'}>
+                  {DAY_NAMES[r.dayOfWeek]}
+                </span>
               </div>
-            )}
-          </div>
-        ))}
+
+              {r.closed ? (
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+                  Cerrado
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2 rounded-lg border bg-muted/20 px-2.5 py-1.5">
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <TimeInput
+                      label="Desde"
+                      value={r.open1 ?? ''}
+                      onChange={(v) => update(r.dayOfWeek, { open1: v || null })}
+                    />
+                    <span className="text-muted-foreground">—</span>
+                    <TimeInput
+                      label="Hasta"
+                      value={r.close1 ?? ''}
+                      onChange={(v) => update(r.dayOfWeek, { close1: v || null })}
+                    />
+                  </div>
+
+                  {hasSecond ? (
+                    <>
+                      <span className="hidden h-4 w-px bg-border sm:block" />
+                      <div className="flex items-center gap-2 rounded-lg border bg-muted/20 px-2.5 py-1.5">
+                        <span className="hidden text-xs text-muted-foreground lg:block">Turno 2</span>
+                        <TimeInput
+                          label="Desde"
+                          value={r.open2 ?? ''}
+                          onChange={(v) => update(r.dayOfWeek, { open2: v || null })}
+                        />
+                        <span className="text-muted-foreground">—</span>
+                        <TimeInput
+                          label="Hasta"
+                          value={r.close2 ?? ''}
+                          onChange={(v) => update(r.dayOfWeek, { close2: v || null })}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-red-500"
+                          onClick={() => clearInterval(r.dayOfWeek)}
+                          aria-label={`Quitar segundo intervalo de ${DAY_NAMES[r.dayOfWeek]}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary"
+                      onClick={() => addInterval(r.dayOfWeek)}
+                    >
+                      <Plus className="mr-1 h-3.5 w-3.5" /> Agregar intervalo
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
-      <p className="mt-4 text-xs text-muted-foreground">
+      <p className="mt-3 text-xs text-muted-foreground">
         Zona horaria: {timezone}. Los turnos se generan según estos horarios.
       </p>
       <div className="mt-4 flex justify-end">
@@ -118,7 +168,8 @@ function TimeInput({ label, value, onChange }: { label: string; value: string; o
       <Label className="hidden text-xs text-muted-foreground lg:block">{label}</Label>
       <Input
         type="time"
-        className="w-28"
+        step={300}
+        className="h-8 w-24 bg-background px-1.5 text-sm sm:w-28"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
