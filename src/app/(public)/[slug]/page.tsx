@@ -4,6 +4,7 @@ import { MapPin, Phone, AtSign, MessageCircle, Scissors, Clock, ArrowRight } fro
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Reveal } from '@/components/ui/reveal'
 import { prisma } from '@/lib/prisma'
 import { formatPrice } from '@/lib/format'
 import { DAY_NAMES } from '@/lib/constants'
@@ -26,6 +27,10 @@ export default async function PublicBarbershopPage({
   if (!barbershop) notFound()
 
   const scheduleByDay = new Map(barbershop.businessHours.map((h) => [h.dayOfWeek, h]))
+  const allClosed = DAY_NAMES.every((_, i) => {
+    const h = scheduleByDay.get(i)
+    return !h || h.closed || !h.open1 || !h.close1
+  })
 
   return (
     <div className="animate-slide-up">
@@ -59,7 +64,7 @@ export default async function PublicBarbershopPage({
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button render={<Link href={`/${slug}/reservar`} />} size="lg" className="bg-white text-foreground hover:bg-white/90">
-              Reservar turno <ArrowRight className="ml-2 h-4 w-4" />
+              Reservar turno <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover/button:translate-x-1" />
             </Button>
             {barbershop.instagram && (
               <Button render={<a href={`https://instagram.com/${barbershop.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" />} size="lg" variant="ghost" className="text-white hover:bg-white/10">
@@ -96,57 +101,82 @@ export default async function PublicBarbershopPage({
         </div>
         {barbershop.services.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center text-sm text-muted-foreground">
-              Todavía no hay servicios publicados.
+            <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <Scissors className="h-5 w-5" />
+              </span>
+              <p className="text-sm font-medium text-foreground">Aún no hay servicios publicados</p>
+              <p className="text-xs text-muted-foreground">
+                Cuando la peluquería cargue sus servicios, aparecerán acá para reservar online.
+              </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {barbershop.services.map((service) => (
-              <Card key={service.id} className="transition-shadow hover:shadow-md">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold">{service.name}</h3>
-                  {service.description && (
-                    <p className="mt-1 text-sm text-muted-foreground">{service.description}</p>
-                  )}
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-lg font-bold">{formatPrice(service.price)}</span>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3.5 w-3.5" /> {service.duration} min
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Reveal>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {barbershop.services.map((service) => (
+                <Card
+                  key={service.id}
+                  className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/30"
+                >
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold">{service.name}</h3>
+                    {service.description && (
+                      <p className="mt-1 text-sm text-muted-foreground">{service.description}</p>
+                    )}
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-lg font-bold">{formatPrice(service.price)}</span>
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5" /> {service.duration} min
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </Reveal>
         )}
         <div className="mt-8 flex justify-center">
           <Button render={<Link href={`/${slug}/reservar`} />} size="lg">
-            Elegir horario <ArrowRight className="ml-2 h-4 w-4" />
+            Elegir horario <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover/button:translate-x-1" />
           </Button>
         </div>
       </section>
 
       <section className="border-t bg-muted/40">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-          <h2 className="text-xl font-bold tracking-tight">Horarios de atención</h2>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {DAY_NAMES.map((day, i) => {
-              const h = scheduleByDay.get(i)
-              const closed = !h || h.closed || !h.open1 || !h.close1
-              return (
-                <div key={day} className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
-                  <span className={closed ? 'text-muted-foreground' : 'font-medium'}>{day}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {closed
-                      ? 'Cerrado'
-                      : `${h?.open1} – ${h?.close1}${h?.open2 && h.close2 ? ` · ${h.open2} – ${h.close2}` : ''}`}
-                  </span>
-                </div>
-              )
-            })}
+        <Reveal>
+          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+            <h2 className="text-xl font-bold tracking-tight">Horarios de atención</h2>
+            {allClosed ? (
+              <div className="mt-6 flex flex-col items-center gap-2 rounded-lg border bg-card px-4 py-8 text-center">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                  <Clock className="h-5 w-5" />
+                </span>
+                <p className="text-sm font-medium text-foreground">Esta semana no hay horarios disponibles</p>
+                <p className="text-xs text-muted-foreground">
+                  Contactá a la peluquería para coordinar tu turno.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {DAY_NAMES.map((day, i) => {
+                  const h = scheduleByDay.get(i)
+                  const closed = !h || h.closed || !h.open1 || !h.close1
+                  return (
+                    <div key={day} className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
+                      <span className={closed ? 'text-muted-foreground' : 'font-medium'}>{day}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {closed
+                          ? 'Cerrado'
+                          : `${h?.open1} – ${h?.close1}${h?.open2 && h.close2 ? ` · ${h.open2} – ${h.close2}` : ''}`}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
-        </div>
+        </Reveal>
       </section>
     </div>
   )

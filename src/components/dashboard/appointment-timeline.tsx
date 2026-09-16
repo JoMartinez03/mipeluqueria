@@ -56,7 +56,7 @@ export function AppointmentTimeline({
                     )}
                   />
                 </div>
-                <div className="min-w-0 flex-1 rounded-xl border bg-card px-4 py-3 transition-shadow hover:shadow-sm">
+                <div className="min-w-0 flex-1 rounded-xl border bg-card px-4 py-3 transition-[box-shadow,border-color] duration-200 hover:border-primary/20 hover:shadow-md">
                   <div className="flex items-center gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-medium">{a.customerName}</div>

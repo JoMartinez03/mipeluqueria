@@ -80,6 +80,7 @@ export default async function DashboardHomePage({
           icon={<CalendarDays className="h-4 w-4" />}
           label="Turnos de hoy"
           value={String(todayAppointments.length)}
+          delay={0}
           hint={
             pendingCount > 0
               ? `${pendingCount} pendientes de confirmar`
@@ -92,18 +93,21 @@ export default async function DashboardHomePage({
           icon={<Clock className="h-4 w-4" />}
           label="Próximo turno"
           value={nextAppointment ? formatClock(nextAppointment.startAt, barbershop.timezone) : '—'}
+          delay={60}
           hint={nextAppointment ? nextAppointment.customerName : 'Sin turnos agendados'}
         />
         <StatCard
           icon={<Wallet className="h-4 w-4" />}
           label="Ingresos estimados"
           value={formatPrice(revenueToday)}
+          delay={120}
           hint="Confirmados y completados"
         />
         <StatCard
           icon={<Users className="h-4 w-4" />}
           label="Próximos 7 días"
           value={String(weekCount)}
+          delay={180}
           hint="Turnos activos agendados"
         />
       </div>
@@ -213,14 +217,16 @@ function StatCard({
   label,
   value,
   hint,
+  delay = 0,
 }: {
   icon: React.ReactNode
   label: string
   value: string
   hint: string
+  delay?: number
 }) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="animate-rise overflow-hidden" style={{ animationDelay: `${delay}ms` }}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">

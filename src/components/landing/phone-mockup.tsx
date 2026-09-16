@@ -9,7 +9,7 @@ export function PhoneMockup({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'relative w-[270px] shrink-0 rounded-[2rem] border-[6px] border-zinc-900 bg-zinc-900 shadow-2xl shadow-black/30',
+        'relative w-[270px] shrink-0 rounded-[2rem] border-[6px] border-zinc-900 bg-zinc-900 shadow-2xl shadow-black/25 ring-1 ring-black/5',
         className
       )}
     >

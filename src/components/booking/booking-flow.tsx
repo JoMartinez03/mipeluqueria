@@ -184,14 +184,15 @@ export function BookingFlow({
       <Stepper current={step} startIndex={startIndex} />
 
       {step === 0 && (
-        <div className="animate-fade-in space-y-3">
+        <div className="animate-step-slide space-y-3">
           {services.map((s) => (
             <button
               key={s.id}
               onClick={() => selectService(s.id)}
               className={cn(
-                'flex w-full items-center gap-4 rounded-xl border bg-card p-5 text-left transition-all hover:border-primary/50 hover:shadow-sm',
-                serviceId === s.id && 'border-primary ring-2 ring-primary/20'
+                'flex w-full items-center gap-4 rounded-xl border bg-card p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md',
+                serviceId === s.id &&
+                  'border-primary bg-primary/[0.03] ring-2 ring-primary/20'
               )}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -203,6 +204,11 @@ export function BookingFlow({
                   <div className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{s.description}</div>
                 )}
               </div>
+              {serviceId === s.id && (
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <Check className="h-3.5 w-3.5" />
+                </span>
+              )}
               <div className="shrink-0 text-right">
                 <div className="font-bold">{formatPrice(s.price)}</div>
                 <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
@@ -215,7 +221,7 @@ export function BookingFlow({
       )}
 
       {step === 1 && service && (
-        <div className="grid animate-fade-in gap-6 lg:grid-cols-2">
+        <div className="grid animate-step-slide gap-6 lg:grid-cols-2">
           <div>
             <div className="mb-3 flex items-center gap-2">
               <span className="text-sm font-medium">1 · Elegí el día</span>
@@ -283,7 +289,7 @@ export function BookingFlow({
       )}
 
       {step === 2 && service && date && time && (
-        <div className="grid animate-fade-in gap-6 lg:grid-cols-2">
+        <div className="grid animate-step-slide gap-6 lg:grid-cols-2">
           <div className="space-y-5">
             <div className="mb-1 text-sm font-medium">Tus datos</div>
             <div className="space-y-2">

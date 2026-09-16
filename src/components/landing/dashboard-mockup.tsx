@@ -14,7 +14,7 @@ export function DashboardMockup({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-2xl border bg-card shadow-2xl shadow-black/10 ring-1 ring-border/60',
+        'overflow-hidden rounded-2xl border bg-card shadow-[0_2px_6px_-1px_oklch(0.16_0.012_205/0.12),0_24px_48px_-16px_oklch(0.47_0.09_178/0.25)] ring-1 ring-border/60',
         className
       )}
     >
@@ -25,7 +25,19 @@ export function DashboardMockup({ className }: { className?: string }) {
         <div className="mx-auto flex items-center gap-1.5 rounded-md bg-background px-3 py-1 text-[10px] text-muted-foreground ring-1 ring-border">
           mipeluqueria.app/<span className="font-medium text-foreground">barber-san-ra</span>
         </div>
-        <span className="w-4" />
+        <span
+          title="Agenda online activa"
+          className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/10 py-0.5 pr-2 pl-1 ring-1 ring-emerald-500/20"
+        >
+          <span aria-hidden="true" className="relative flex h-1.5 w-1.5">
+            <span aria-hidden="true" className="animate-soft-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400" />
+            <span aria-hidden="true" className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          </span>
+          <span aria-hidden="true" className="hidden text-[8px] font-semibold tracking-wide text-emerald-700 sm:inline">
+            Agenda online activa
+          </span>
+          <span className="sr-only">Agenda online activa</span>
+        </span>
       </div>
 
       <div className="flex">
