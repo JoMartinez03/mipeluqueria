@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useSyncExternalStore, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Save, ExternalLink, Store, Share2, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,22 @@ export type BarbershopSettings = {
   coverImage: string | null
 }
 
+type SiteInfo = { host: string; origin: string }
+
+let cachedSite: SiteInfo | null = null
+
+function getSiteSnapshot(): SiteInfo {
+  const host = window.location.host
+  const origin = window.location.origin
+  if (!cachedSite || cachedSite.host !== host || cachedSite.origin !== origin) {
+    cachedSite = { host, origin }
+  }
+  return cachedSite
+}
+
+const subscribeSite = () => () => {}
+const getServerSiteSnapshot = () => null
+
 export function BarbershopSettingsForm({ barbershop }: { barbershop: BarbershopSettings }) {
   const router = useRouter()
   const { toast } = useToast()
@@ -39,6 +55,8 @@ export function BarbershopSettingsForm({ barbershop }: { barbershop: BarbershopS
     coverImage: barbershop.coverImage,
   })
   const [saving, setSaving] = useState(false)
+
+  const site = useSyncExternalStore(subscribeSite, getSiteSnapshot, getServerSiteSnapshot)
 
   const save = async () => {
     if (!form.name.trim()) {
@@ -73,7 +91,7 @@ export function BarbershopSettingsForm({ barbershop }: { barbershop: BarbershopS
   }
 
   const publicUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}/${barbershop.slug}` : `/${barbershop.slug}`
+    site ? `${site.origin}/${barbershop.slug}` : `/${barbershop.slug}`
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -215,7 +233,7 @@ export function BarbershopSettingsForm({ barbershop }: { barbershop: BarbershopS
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">{barbershop.name}</div>
                 <div className="truncate text-xs text-muted-foreground">
-                  {typeof window !== 'undefined' ? `${window.location.host}/${barbershop.slug}` : `/${barbershop.slug}`}
+                  {site ? `${site.host}/${barbershop.slug}` : `/${barbershop.slug}`}
                 </div>
               </div>
             </div>

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Reveal } from '@/components/ui/reveal'
-import { BusinessStatusBadge } from '@/components/business-status-badge'
 import { prisma } from '@/lib/prisma'
 import { formatPrice } from '@/lib/format'
 import { DAY_NAMES } from '@/lib/constants'
@@ -24,20 +23,10 @@ export default async function PublicBarbershopPage({
     include: {
       services: { where: { active: true }, orderBy: { createdAt: 'asc' } },
       businessHours: { orderBy: { dayOfWeek: 'asc' } },
-      scheduleExceptions: true,
     },
   })
 
   if (!barbershop) notFound()
-
-  const statusHours = barbershop.businessHours.map((h) => ({
-    dayOfWeek: h.dayOfWeek,
-    closed: h.closed,
-    open1: h.open1,
-    close1: h.close1,
-    open2: h.open2,
-    close2: h.close2,
-  }))
 
   const scheduleByDay = new Map(barbershop.businessHours.map((h) => [h.dayOfWeek, h]))
   const allClosed = DAY_NAMES.every((_, i) => {
@@ -70,14 +59,6 @@ export default async function PublicBarbershopPage({
             <Badge className="mb-4 rounded-full bg-white/10 text-white ring-1 ring-white/20">
               <Scissors className="mr-1.5 h-3 w-3" /> Reservas online
             </Badge>
-            <div className="mb-5 lg:absolute lg:right-0 lg:top-0 lg:mb-0">
-              <BusinessStatusBadge
-                tone="dark"
-                timezone={barbershop.timezone}
-                businessHours={statusHours}
-                scheduleExceptions={barbershop.scheduleExceptions}
-              />
-            </div>
             <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
               {barbershop.name}
             </h1>
