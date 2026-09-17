@@ -16,6 +16,7 @@ import { getVerifiedBarbershop } from '@/lib/tenants'
 import { prisma } from '@/lib/prisma'
 import { formatClock, formatPrice } from '@/lib/format'
 import { topOfLocalDayUtc, addDays } from '@/lib/dates'
+import { BusinessStatusBadge } from '@/components/business-status-badge'
 
 export default async function DashboardHomePage({
   params,
@@ -29,7 +30,7 @@ export default async function DashboardHomePage({
   const todayEnd = addDays(todayStart, 1)
   const weekStart = topOfLocalDayUtc(new Date(), barbershop.timezone)
 
-  const [todayAppointments, todayCounts, weekCount] = await Promise.all([
+  const [todayAppointments, todayCounts, weekCount, scheduleExceptions] = await Promise.all([
     prisma.appointment.findMany({
       where: {
         barbershopId: barbershop.id,
@@ -53,6 +54,17 @@ export default async function DashboardHomePage({
         startAt: { gte: weekStart },
       },
     }),
+    prisma.scheduleException.findMany({
+      where: { barbershopId: barbershop.id },
+      select: {
+        date: true,
+        closed: true,
+        open1: true,
+        close1: true,
+        open2: true,
+        close2: true,
+      },
+    }),
   ])
 
   const counts: Record<string, number> = {}
@@ -73,6 +85,20 @@ export default async function DashboardHomePage({
       <DashboardPageHeader
         title={`Hola, ${barbershop.name}`}
         description="Resumen de tu actividad de hoy"
+        action={
+          <BusinessStatusBadge
+            timezone={barbershop.timezone}
+            businessHours={barbershop.businessHours.map((h) => ({
+              dayOfWeek: h.dayOfWeek,
+              closed: h.closed,
+              open1: h.open1,
+              close1: h.close1,
+              open2: h.open2,
+              close2: h.close2,
+            }))}
+            scheduleExceptions={scheduleExceptions}
+          />
+        }
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

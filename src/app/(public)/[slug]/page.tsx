@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Reveal } from '@/components/ui/reveal'
+import { BusinessStatusBadge } from '@/components/business-status-badge'
 import { prisma } from '@/lib/prisma'
 import { formatPrice } from '@/lib/format'
 import { DAY_NAMES } from '@/lib/constants'
+
+export const dynamic = 'force-dynamic'
 
 export default async function PublicBarbershopPage({
   params,
@@ -21,10 +24,20 @@ export default async function PublicBarbershopPage({
     include: {
       services: { where: { active: true }, orderBy: { createdAt: 'asc' } },
       businessHours: { orderBy: { dayOfWeek: 'asc' } },
+      scheduleExceptions: true,
     },
   })
 
   if (!barbershop) notFound()
+
+  const statusHours = barbershop.businessHours.map((h) => ({
+    dayOfWeek: h.dayOfWeek,
+    closed: h.closed,
+    open1: h.open1,
+    close1: h.close1,
+    open2: h.open2,
+    close2: h.close2,
+  }))
 
   const scheduleByDay = new Map(barbershop.businessHours.map((h) => [h.dayOfWeek, h]))
   const allClosed = DAY_NAMES.every((_, i) => {
@@ -47,47 +60,57 @@ export default async function PublicBarbershopPage({
         <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 via-zinc-950/55 to-zinc-950/80" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.08),transparent_55%)]" />
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-          {barbershop.logo && (
-            <div className="mb-5 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/25 backdrop-blur">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={barbershop.logo} alt={`Logo de ${barbershop.name}`} className="h-full w-full object-cover" />
+          <div className="relative">
+            {barbershop.logo && (
+              <div className="mb-5 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/25 backdrop-blur">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={barbershop.logo} alt={`Logo de ${barbershop.name}`} className="h-full w-full object-cover" />
+              </div>
+            )}
+            <Badge className="mb-4 rounded-full bg-white/10 text-white ring-1 ring-white/20">
+              <Scissors className="mr-1.5 h-3 w-3" /> Reservas online
+            </Badge>
+            <div className="mb-5 lg:absolute lg:right-0 lg:top-0 lg:mb-0">
+              <BusinessStatusBadge
+                tone="dark"
+                timezone={barbershop.timezone}
+                businessHours={statusHours}
+                scheduleExceptions={barbershop.scheduleExceptions}
+              />
             </div>
-          )}
-          <Badge className="mb-4 rounded-full bg-white/10 text-white ring-1 ring-white/20">
-            <Scissors className="mr-1.5 h-3 w-3" /> Reservas online
-          </Badge>
-          <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            {barbershop.name}
-          </h1>
-          <p className="mt-4 max-w-xl text-lg text-white/70">
-            {barbershop.description ?? 'Reservá tu turno online en minutos, elegí el día y el horario que mejor te queden.'}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button render={<Link href={`/${slug}/reservar`} />} size="lg" className="bg-white text-foreground hover:bg-white/90">
-              Reservar turno <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover/button:translate-x-1" />
-            </Button>
-            {barbershop.instagram && (
-              <Button render={<a href={`https://instagram.com/${barbershop.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" />} size="lg" variant="ghost" className="text-white hover:bg-white/10">
-                <AtSign className="mr-2 h-4 w-4" /> Instagram
+            <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              {barbershop.name}
+            </h1>
+            <p className="mt-4 max-w-xl text-lg text-white/70">
+              {barbershop.description ?? 'Reservá tu turno online en minutos, elegí el día y el horario que mejor te queden.'}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button render={<Link href={`/${slug}/reservar`} />} size="lg" className="bg-white text-foreground hover:bg-white/90">
+                Reservar turno <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover/button:translate-x-1" />
               </Button>
-            )}
-          </div>
-          <div className="mt-10 flex flex-wrap gap-6 text-sm text-white/60">
-            {barbershop.address && (
-              <span className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4" /> {barbershop.address}
-              </span>
-            )}
-            {barbershop.phone && (
-              <span className="flex items-center gap-1.5">
-                <Phone className="h-4 w-4" /> {barbershop.phone}
-              </span>
-            )}
-            {barbershop.whatsapp && (
-              <span className="flex items-center gap-1.5">
-                <MessageCircle className="h-4 w-4" /> {barbershop.whatsapp}
-              </span>
-            )}
+              {barbershop.instagram && (
+                <Button render={<a href={`https://instagram.com/${barbershop.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" />} size="lg" variant="ghost" className="text-white hover:bg-white/10">
+                  <AtSign className="mr-2 h-4 w-4" /> Instagram
+                </Button>
+              )}
+            </div>
+            <div className="mt-10 flex flex-wrap gap-6 text-sm text-white/60">
+              {barbershop.address && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4" /> {barbershop.address}
+                </span>
+              )}
+              {barbershop.phone && (
+                <span className="flex items-center gap-1.5">
+                  <Phone className="h-4 w-4" /> {barbershop.phone}
+                </span>
+              )}
+              {barbershop.whatsapp && (
+                <span className="flex items-center gap-1.5">
+                  <MessageCircle className="h-4 w-4" /> {barbershop.whatsapp}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </section>

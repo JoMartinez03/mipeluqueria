@@ -6,7 +6,7 @@ const PRODUCT = [
   { label: 'Para tus clientes', href: '#clientes' },
 ]
 
-const LINK_CLASS = 'text-zinc-400 transition-colors duration-200 hover:text-teal-300'
+const LINK_CLASS = 'text-zinc-300 transition-colors duration-200 hover:text-teal-300'
 
 export function PublicFooter() {
   return (
@@ -29,14 +29,14 @@ export function PublicFooter() {
               </span>
               <span className="text-lg font-bold text-white">MiPeluqueria</span>
             </Link>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500">
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-400">
               Turnos online para tu peluquería o barbería. Sin líos, sin planillas, sin perder
               clientes.
             </p>
           </div>
 
           <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Producto</div>
+            <div className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Producto</div>
             <ul className="mt-4 space-y-3 text-sm">
               {PRODUCT.map((l) => (
                 <li key={l.href}>
@@ -49,7 +49,7 @@ export function PublicFooter() {
           </div>
 
           <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Cuenta</div>
+            <div className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Cuenta</div>
             <ul className="mt-4 space-y-3 text-sm">
               <li>
                 <Link href="/login" className={LINK_CLASS}>
@@ -65,7 +65,7 @@ export function PublicFooter() {
           </div>
 
           <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Ayuda</div>
+            <div className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Ayuda</div>
             <ul className="mt-4 space-y-3 text-sm">
               <li>
                 <a href="#pasos" className={LINK_CLASS}>
@@ -81,15 +81,15 @@ export function PublicFooter() {
           </div>
 
           <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Legal</div>
-            <ul className="mt-4 space-y-3 text-sm text-zinc-500">
+            <div className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Legal</div>
+            <ul className="mt-4 space-y-3 text-sm text-zinc-400">
               <li>Términos de uso</li>
               <li>Política de privacidad</li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/5 pt-6 text-xs text-zinc-600 sm:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/5 pt-6 text-xs text-zinc-400 sm:flex-row">
           <span>© {new Date().getFullYear()} MiPeluqueria. Todos los derechos reservados.</span>
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
